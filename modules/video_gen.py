@@ -8,7 +8,7 @@ from google.genai import types
 def generate_video(prompt: str, api_key: str, output_path: Path) -> None:
     client = genai.Client(api_key=api_key)
     operation = client.models.generate_videos(
-        model="veo-3.0-generate-001",
+        model="veo-2.0-generate-001",
         prompt=prompt,
         config=types.GenerateVideosConfig(aspect_ratio="16:9"),
     )
