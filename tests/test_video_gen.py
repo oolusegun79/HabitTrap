@@ -9,14 +9,14 @@ def make_operation(done: bool, video_uri: str = "", error=None) -> MagicMock:
     op.done = done
     op.error = error
     if done and video_uri:
-        op.response.generated_videos[0].video.uri = video_uri
+        op.result.generated_videos[0].video.uri = video_uri
     return op
 
 
 def make_sdk_client(operations: list) -> MagicMock:
     client = MagicMock()
     client.models.generate_videos.return_value = operations[0]
-    client.operations.get_videos_operation.side_effect = operations[1:]
+    client.operations.get.side_effect = operations[1:]
     return client
 
 

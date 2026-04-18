@@ -4,9 +4,9 @@ from unittest.mock import patch, MagicMock
 from modules.image_gen import generate_image, generate_images
 
 
-def make_sdk_response(image_bytes_b64: str) -> MagicMock:
+def make_sdk_response(image_bytes: bytes) -> MagicMock:
     mock_image = MagicMock()
-    mock_image.image.image_bytes = image_bytes_b64
+    mock_image.image.image_bytes = image_bytes
     mock_response = MagicMock()
     mock_response.generated_images = [mock_image]
     mock_client = MagicMock()
@@ -15,12 +15,10 @@ def make_sdk_response(image_bytes_b64: str) -> MagicMock:
 
 
 def test_generate_image_saves_file(tmp_path):
-    import base64
     raw = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
-    b64 = base64.b64encode(raw).decode()
     output_path = tmp_path / "image_001.png"
 
-    with patch("modules.image_gen.genai.Client", return_value=make_sdk_response(b64)):
+    with patch("modules.image_gen.genai.Client", return_value=make_sdk_response(raw)):
         generate_image("a prompt", "api_key", output_path)
 
     assert output_path.exists()

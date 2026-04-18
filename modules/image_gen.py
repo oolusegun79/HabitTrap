@@ -1,4 +1,3 @@
-import base64
 import time
 from pathlib import Path
 from google import genai
@@ -12,8 +11,7 @@ def generate_image(prompt: str, api_key: str, output_path: Path) -> None:
         prompt=prompt,
         config=types.GenerateImagesConfig(number_of_images=1),
     )
-    image_bytes = base64.b64decode(response.generated_images[0].image.image_bytes)
-    output_path.write_bytes(image_bytes)
+    output_path.write_bytes(response.generated_images[0].image.image_bytes)
 
 
 def generate_images(

@@ -15,9 +15,9 @@ def generate_video(prompt: str, api_key: str, output_path: Path) -> None:
 
     for _ in range(60):
         time.sleep(10)
-        operation = client.operations.get_videos_operation(operation=operation)
+        operation = client.operations.get(operation)
         if operation.done:
-            video_uri = operation.response.generated_videos[0].video.uri
+            video_uri = operation.result.generated_videos[0].video.uri
             download_url = video_uri.replace("gs://", "https://storage.googleapis.com/")
             resp = requests.get(download_url, headers={"x-goog-api-key": api_key})
             resp.raise_for_status()
