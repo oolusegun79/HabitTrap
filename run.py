@@ -46,7 +46,7 @@ def process_media(week_folder: Path, script_key: str, state: dict) -> None:
     script_folder = week_folder / script_key
 
     image_prompts = parse_prompts(script_folder / f"Script{script_num}ImagePrompt.md")[:40]
-    video_prompts = parse_prompts(script_folder / "ScriptVideoPrompt.md")[:20]
+    video_prompts = parse_prompts(script_folder / "ScriptVideoPrompt.md")[:15]
 
     print(f"  Generating {len(image_prompts)} images for {script_key}...")
     state[script_key] = "image_gen_in_progress"
