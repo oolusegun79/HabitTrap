@@ -1,26 +1,19 @@
+import base64
 import time
-import requests
 from pathlib import Path
-
-# Verify this URL against Nano Banana Pro API docs before production use
-NANO_BANANA_URL = "https://api.nanobananapro.com/v1/generate"
+from google import genai
+from google.genai import types
 
 
 def generate_image(prompt: str, api_key: str, output_path: Path) -> None:
-    response = requests.post(
-        NANO_BANANA_URL,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={"prompt": prompt, "width": 1024, "height": 1024},
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_images(
+        model="imagen-4.0-fast-generate-001",
+        prompt=prompt,
+        config=types.GenerateImagesConfig(number_of_images=1),
     )
-    response.raise_for_status()
-    image_url = response.json()["url"]
-
-    img_response = requests.get(image_url)
-    img_response.raise_for_status()
-    output_path.write_bytes(img_response.content)
+    image_bytes = base64.b64decode(response.generated_images[0].image.image_bytes)
+    output_path.write_bytes(image_bytes)
 
 
 def generate_images(

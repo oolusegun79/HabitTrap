@@ -53,7 +53,7 @@ def process_media(week_folder: Path, script_key: str, state: dict) -> None:
     save_state(week_folder, state)
     generate_images(
         image_prompts,
-        get_env("NANO_BANANA_API_KEY"),
+        get_env("GEMINI_API_KEY"),
         script_folder / "images",
         state,
         script_key,
@@ -65,7 +65,7 @@ def process_media(week_folder: Path, script_key: str, state: dict) -> None:
     save_state(week_folder, state)
     generate_videos(
         video_prompts,
-        get_env("FLOW_API_KEY"),
+        get_env("GEMINI_API_KEY"),
         script_folder / "videos",
         state,
         script_key,

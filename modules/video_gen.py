@@ -1,43 +1,32 @@
 import time
 import requests
 from pathlib import Path
-
-# Verify these URLs against Flow API docs before production use
-FLOW_SUBMIT_URL = "https://api.flow.ai/v1/generate"
-FLOW_POLL_URL = "https://api.flow.ai/v1/jobs/{job_id}"
+from google import genai
+from google.genai import types
 
 
 def generate_video(prompt: str, api_key: str, output_path: Path) -> None:
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    response = requests.post(
-        FLOW_SUBMIT_URL,
-        headers=headers,
-        json={"prompt": prompt, "duration": 3, "aspect_ratio": "16:9"},
+    client = genai.Client(api_key=api_key)
+    operation = client.models.generate_videos(
+        model="veo-3.0-generate-001",
+        prompt=prompt,
+        config=types.GenerateVideosConfig(aspect_ratio="16:9"),
     )
-    response.raise_for_status()
-    job_id = response.json()["id"]
 
     for _ in range(60):
-        time.sleep(5)
-        poll = requests.get(
-            FLOW_POLL_URL.format(job_id=job_id),
-            headers=headers,
-        )
-        poll.raise_for_status()
-        result = poll.json()
-
-        if result["status"] == "completed":
-            video_response = requests.get(result["video_url"])
-            video_response.raise_for_status()
-            output_path.write_bytes(video_response.content)
+        time.sleep(10)
+        operation = client.operations.get_videos_operation(operation=operation)
+        if operation.done:
+            video_uri = operation.response.generated_videos[0].video.uri
+            download_url = video_uri.replace("gs://", "https://storage.googleapis.com/")
+            resp = requests.get(download_url, headers={"x-goog-api-key": api_key})
+            resp.raise_for_status()
+            output_path.write_bytes(resp.content)
             return
-        elif result["status"] == "failed":
-            raise RuntimeError(f"Video generation failed for job {job_id}: {result.get('error')}")
+        if hasattr(operation, "error") and operation.error:
+            raise RuntimeError(f"Video generation failed: {operation.error}")
 
-    raise TimeoutError(f"Video generation timed out for job {job_id}")
+    raise TimeoutError(f"Video generation timed out after 600s")
 
 
 def generate_videos(

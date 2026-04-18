@@ -55,12 +55,8 @@ Six skills: `topic-research`, `script-writer`, `grammar-humanizer`, `image-promp
 | `research.py` | Anthropic Claude (humanize) | `ANTHROPIC_API_KEY` |
 | `prompts.py` | Anthropic Claude (prompt files) | `ANTHROPIC_API_KEY` |
 | `voiceover.py` | ElevenLabs (WAV, PCM wrapped) | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` |
-| `image_gen.py` | Nano Banana Pro | `NANO_BANANA_API_KEY` |
-| `video_gen.py` | Flow API (async job+poll) | `FLOW_API_KEY` |
-
-### Known placeholders
-
-`NANO_BANANA_URL` in `modules/image_gen.py` and `FLOW_SUBMIT_URL`/`FLOW_POLL_URL` in `modules/video_gen.py` are placeholder endpoints. Verify against the actual API docs before the first production run.
+| `image_gen.py` | Google Imagen 4 via `google-genai` SDK | `GEMINI_API_KEY` |
+| `video_gen.py` | Google Veo 3 via `google-genai` SDK (async operation+poll) | `GEMINI_API_KEY` |
 
 ### Output structure
 
