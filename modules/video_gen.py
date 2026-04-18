@@ -1,32 +1,29 @@
 import time
-import requests
 from pathlib import Path
 from google import genai
 from google.genai import types
+
+MODEL = "veo-3.1-lite-generate-preview"
 
 
 def generate_video(prompt: str, api_key: str, output_path: Path) -> None:
     client = genai.Client(api_key=api_key)
     operation = client.models.generate_videos(
-        model="veo-2.0-generate-001",
+        model=MODEL,
         prompt=prompt,
         config=types.GenerateVideosConfig(aspect_ratio="16:9"),
     )
 
-    for _ in range(60):
+    while not operation.done:
         time.sleep(10)
         operation = client.operations.get(operation)
-        if operation.done:
-            video_uri = operation.result.generated_videos[0].video.uri
-            download_url = video_uri.replace("gs://", "https://storage.googleapis.com/")
-            resp = requests.get(download_url, headers={"x-goog-api-key": api_key})
-            resp.raise_for_status()
-            output_path.write_bytes(resp.content)
-            return
-        if hasattr(operation, "error") and operation.error:
-            raise RuntimeError(f"Video generation failed: {operation.error}")
 
-    raise TimeoutError(f"Video generation timed out after 600s")
+    if not operation.response.generated_videos:
+        raise RuntimeError("Video generation returned no videos")
+
+    generated_video = operation.response.generated_videos[0]
+    client.files.download(file=generated_video.video)
+    generated_video.video.save(str(output_path))
 
 
 def generate_videos(

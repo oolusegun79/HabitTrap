@@ -4,12 +4,15 @@ from unittest.mock import patch, MagicMock, call
 from modules.video_gen import generate_video, generate_videos
 
 
-def make_operation(done: bool, video_uri: str = "", error=None) -> MagicMock:
+def make_operation(done: bool, has_videos: bool = False) -> MagicMock:
     op = MagicMock()
     op.done = done
-    op.error = error
-    if done and video_uri:
-        op.result.generated_videos[0].video.uri = video_uri
+    if has_videos:
+        video = MagicMock()
+        video.save = MagicMock()
+        op.response.generated_videos = [MagicMock(video=video)]
+    else:
+        op.response.generated_videos = []
     return op
 
 
@@ -22,35 +25,26 @@ def make_sdk_client(operations: list) -> MagicMock:
 
 def test_generate_video_saves_file_on_success(tmp_path):
     output_path = tmp_path / "video_001.mp4"
-    video_bytes = b"fake_video_data"
-
     pending = make_operation(done=False)
-    done_op = make_operation(done=True, video_uri="gs://bucket/video.mp4")
+    done_op = make_operation(done=True, has_videos=True)
     client = make_sdk_client([pending, pending, done_op])
-
-    mock_dl = MagicMock()
-    mock_dl.content = video_bytes
-    mock_dl.raise_for_status = MagicMock()
-
-    with patch("modules.video_gen.genai.Client", return_value=client):
-        with patch("modules.video_gen.requests.get", return_value=mock_dl):
-            with patch("modules.video_gen.time.sleep"):
-                generate_video("a prompt", "api_key", output_path)
-
-    assert output_path.exists()
-    assert output_path.read_bytes() == video_bytes
-
-
-def test_generate_video_raises_on_error(tmp_path):
-    output_path = tmp_path / "video_001.mp4"
-    pending = make_operation(done=False)
-    error_op = make_operation(done=False)
-    error_op.error = "Something went wrong"
-    client = make_sdk_client([pending, error_op])
 
     with patch("modules.video_gen.genai.Client", return_value=client):
         with patch("modules.video_gen.time.sleep"):
-            with pytest.raises(RuntimeError, match="Video generation failed"):
+            generate_video("a prompt", "api_key", output_path)
+
+    client.files.download.assert_called_once()
+    done_op.response.generated_videos[0].video.save.assert_called_once_with(str(output_path))
+
+
+def test_generate_video_raises_when_no_videos_returned(tmp_path):
+    output_path = tmp_path / "video_001.mp4"
+    done_op = make_operation(done=True, has_videos=False)
+    client = make_sdk_client([done_op])
+
+    with patch("modules.video_gen.genai.Client", return_value=client):
+        with patch("modules.video_gen.time.sleep"):
+            with pytest.raises(RuntimeError, match="no videos"):
                 generate_video("a prompt", "api_key", output_path)
 
 
