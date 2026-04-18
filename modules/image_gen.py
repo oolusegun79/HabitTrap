@@ -8,18 +8,23 @@ MODEL = "gemini-3.1-flash-image-preview"
 
 def generate_image(prompt: str, api_key: str, output_path: Path) -> None:
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=[prompt],
-        config=types.GenerateContentConfig(
-            response_modalities=["IMAGE"],
-        ),
-    )
-    for part in response.parts:
-        if part.inline_data is not None:
-            part.as_image().save(str(output_path))
-            return
-    raise RuntimeError("Image generation returned no image data")
+    for attempt in range(3):
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=[prompt],
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+            ),
+        )
+        if response.parts is None:
+            time.sleep(2)
+            continue
+        for part in response.parts:
+            if part.inline_data is not None:
+                part.as_image().save(str(output_path))
+                return
+        time.sleep(2)
+    print(f"  Skipping image (no data after 3 attempts): {output_path.name}")
 
 
 def generate_images(

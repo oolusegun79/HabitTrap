@@ -12,7 +12,7 @@ def call_perplexity(system_prompt: str, user_message: str, api_key: str) -> str:
             "Content-Type": "application/json",
         },
         json={
-            "model": "llama-3.1-sonar-large-128k-online",
+            "model": "sonar-pro",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},

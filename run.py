@@ -109,7 +109,7 @@ def main() -> None:
                 clean_script,
                 get_env("ELEVENLABS_VOICE_ID"),
                 get_env("ELEVENLABS_API_KEY"),
-                script_folder / f"Script{i}.wav",
+                script_folder / f"Script{i}.mp3",
             )
 
             state[script_key] = "scripts_done"
