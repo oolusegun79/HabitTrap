@@ -4,25 +4,38 @@ from unittest.mock import patch, MagicMock
 from modules.image_gen import generate_image, generate_images
 
 
-def make_sdk_response(image_bytes: bytes) -> MagicMock:
-    mock_image = MagicMock()
-    mock_image.image.image_bytes = image_bytes
+def make_sdk_response(has_image: bool = True) -> MagicMock:
+    part = MagicMock()
+    if has_image:
+        part.inline_data = MagicMock()
+        part.as_image.return_value = MagicMock()
+    else:
+        part.inline_data = None
     mock_response = MagicMock()
-    mock_response.generated_images = [mock_image]
+    mock_response.parts = [part]
     mock_client = MagicMock()
-    mock_client.models.generate_images.return_value = mock_response
+    mock_client.models.generate_content.return_value = mock_response
     return mock_client
 
 
 def test_generate_image_saves_file(tmp_path):
-    raw = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
     output_path = tmp_path / "image_001.png"
+    client = make_sdk_response(has_image=True)
 
-    with patch("modules.image_gen.genai.Client", return_value=make_sdk_response(raw)):
+    with patch("modules.image_gen.genai.Client", return_value=client):
         generate_image("a prompt", "api_key", output_path)
 
-    assert output_path.exists()
-    assert output_path.read_bytes() == raw
+    client.models.generate_content.assert_called_once()
+    client.models.generate_content.return_value.parts[0].as_image.return_value.save.assert_called_once_with(str(output_path))
+
+
+def test_generate_image_raises_when_no_image_returned(tmp_path):
+    output_path = tmp_path / "image_001.png"
+    client = make_sdk_response(has_image=False)
+
+    with patch("modules.image_gen.genai.Client", return_value=client):
+        with pytest.raises(RuntimeError, match="no image data"):
+            generate_image("a prompt", "api_key", output_path)
 
 
 def test_generate_images_skips_already_done(tmp_path):

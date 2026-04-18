@@ -3,15 +3,23 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 
+MODEL = "gemini-3.1-flash-image-preview"
+
 
 def generate_image(prompt: str, api_key: str, output_path: Path) -> None:
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_images(
-        model="imagen-4.0-fast-generate-001",
-        prompt=prompt,
-        config=types.GenerateImagesConfig(number_of_images=1),
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=[prompt],
+        config=types.GenerateContentConfig(
+            response_modalities=["IMAGE"],
+        ),
     )
-    output_path.write_bytes(response.generated_images[0].image.image_bytes)
+    for part in response.parts:
+        if part.inline_data is not None:
+            part.as_image().save(str(output_path))
+            return
+    raise RuntimeError("Image generation returned no image data")
 
 
 def generate_images(

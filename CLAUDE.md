@@ -55,8 +55,22 @@ Six skills: `topic-research`, `script-writer`, `grammar-humanizer`, `image-promp
 | `research.py` | Anthropic Claude (humanize) | `ANTHROPIC_API_KEY` |
 | `prompts.py` | Anthropic Claude (prompt files) | `ANTHROPIC_API_KEY` |
 | `voiceover.py` | ElevenLabs (WAV, PCM wrapped) | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` |
-| `image_gen.py` | Google Imagen 4 via `google-genai` SDK | `GEMINI_API_KEY` |
-| `video_gen.py` | Google Veo 3 via `google-genai` SDK (async operation+poll) | `GEMINI_API_KEY` |
+| `image_gen.py` | Gemini 3.1 Flash Image (`generate_content` + Pillow) | `GEMINI_API_KEY` |
+| `video_gen.py` | Veo 3.1 Lite (`veo-3.1-lite-generate-preview`, async operation+poll) | `GEMINI_API_KEY` |
+
+### Live API testing
+
+`test_live.py` generates one image and one video using real API keys. Run it to verify keys and check output quality before a full Friday run:
+
+```bash
+uv run python test_live.py
+# Output saved to test_output/ (gitignored)
+```
+
+To swap video quality vs cost, change `MODEL` in `modules/video_gen.py`:
+- `veo-3.1-lite-generate-preview` — $0.05/sec (~$0.40/video)
+- `veo-3.1-fast-generate-preview` — $0.10/sec (~$0.80/video)
+- `veo-3.1-generate-preview` — $0.40/sec (~$3.20/video)
 
 ### Output structure
 

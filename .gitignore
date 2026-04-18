@@ -5,3 +5,5 @@ __pycache__/
 *.pyo
 .pytest_cache/
 *.wav
+test_output/
+docs/superpowers/

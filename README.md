@@ -37,23 +37,27 @@ uv pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Open `.env` and fill in all 6 keys:
+Open `.env` and fill in all 5 keys:
 
 ```env
 PERPLEXITY_API_KEY=
 ANTHROPIC_API_KEY=
 ELEVENLABS_API_KEY=
 ELEVENLABS_VOICE_ID=
-NANO_BANANA_API_KEY=
-FLOW_API_KEY=
+GEMINI_API_KEY=
 ```
 
-### 3. Verify API endpoints
+Get your Gemini API key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey). Veo 3.1 video generation requires a paid Gemini API tier.
 
-Before the first run, confirm these placeholder URLs match your actual API docs:
+### 3. Test your API keys
 
-- `modules/image_gen.py` → `NANO_BANANA_URL`
-- `modules/video_gen.py` → `FLOW_SUBMIT_URL` and `FLOW_POLL_URL`
+Before the first full Friday run, generate one sample image and video to verify everything works:
+
+```bash
+uv run python test_live.py
+```
+
+Output is saved to `test_output/` (gitignored).
 
 ---
 
@@ -121,6 +125,20 @@ All AI prompt templates are in `.claude/skills/`:
 | `thumbnail-generator` | Thumbnail composition and text |
 
 Edit the `SKILL.md` file in any skill folder to change how that stage behaves — no Python changes needed.
+
+---
+
+## APIs Used
+
+| Stage | API | Model |
+|-------|-----|-------|
+| Topic research + scripts | Perplexity | `llama-3.1-sonar-large-128k-online` |
+| Script humanization + prompts | Anthropic Claude | `claude-sonnet-4-6` |
+| Voiceover | ElevenLabs | Your chosen voice ID |
+| Image generation | Google Gemini | `gemini-3.1-flash-image-preview` |
+| Video generation | Google Veo | `veo-3.1-lite-generate-preview` |
+
+To upgrade video quality, change `MODEL` in `modules/video_gen.py` to `veo-3.1-fast-generate-preview` ($0.10/sec) or `veo-3.1-generate-preview` ($0.40/sec).
 
 ---
 

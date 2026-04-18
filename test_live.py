@@ -25,7 +25,7 @@ PROMPT = (
     "Clean line art, simple flat colors, thin black outlines."
 )
 
-print("Generating image with Imagen 4...")
+print("Generating image with Gemini 3.1 Flash...")
 image_path = OUTPUT_DIR / "sample_image.png"
 generate_image(PROMPT, GEMINI_API_KEY, image_path)
 print(f"  Saved: {image_path}  ({image_path.stat().st_size:,} bytes)")
