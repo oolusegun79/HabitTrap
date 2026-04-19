@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 from google import genai
@@ -6,13 +7,44 @@ from google.genai import types
 MODEL = "veo-3.1-lite-generate-preview"
 
 
-def generate_video(prompt: str, api_key: str, output_path: Path) -> None:
+def _extract_image_num(prompt: str) -> int | None:
+    # Matches "from Image 4" or "from Image 12" in the prompt header
+    match = re.search(r"from Image (\d+)", prompt, re.IGNORECASE)
+    return int(match.group(1)) if match else None
+
+
+def generate_video(
+    prompt: str,
+    api_key: str,
+    output_path: Path,
+    images_folder: Path | None = None,
+) -> None:
     client = genai.Client(api_key=api_key)
-    operation = client.models.generate_videos(
-        model=MODEL,
-        prompt=prompt,
-        config=types.GenerateVideosConfig(aspect_ratio="16:9"),
-    )
+
+    image = None
+    if images_folder:
+        img_num = _extract_image_num(prompt)
+        if img_num is not None:
+            img_path = images_folder / f"image_{img_num:03d}.png"
+            if img_path.exists():
+                image = types.Image(
+                    image_bytes=img_path.read_bytes(),
+                    mime_type="image/png",
+                )
+
+    if image is not None:
+        operation = client.models.generate_videos(
+            model=MODEL,
+            image=image,
+            prompt=prompt,
+            config=types.GenerateVideosConfig(aspect_ratio="16:9"),
+        )
+    else:
+        operation = client.models.generate_videos(
+            model=MODEL,
+            prompt=prompt,
+            config=types.GenerateVideosConfig(aspect_ratio="16:9"),
+        )
 
     while not operation.done:
         time.sleep(10)
@@ -33,6 +65,7 @@ def generate_videos(
     state: dict,
     script_key: str,
     save_state_fn,
+    images_folder: Path | None = None,
 ) -> None:
     completed = state.get(f"{script_key}_videos_done", [])
 
@@ -41,7 +74,7 @@ def generate_videos(
         if filename in completed:
             continue
 
-        generate_video(prompt, api_key, videos_folder / filename)
+        generate_video(prompt, api_key, videos_folder / filename, images_folder)
         completed.append(filename)
         state[f"{script_key}_videos_done"] = completed
         save_state_fn(state)

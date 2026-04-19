@@ -25,18 +25,19 @@ def parse_prompts(prompt_file: Path) -> list[str]:
     prompts = []
     current_lines: list[str] = []
     for line in lines:
-        stripped = line.strip()
-        if not stripped:
+        stripped = line.strip().lstrip("*").strip()
+        if not stripped or stripped.startswith("---"):
             continue
         is_new = stripped.startswith("Image ") or stripped.startswith("Video ")
         if is_new and current_lines:
-            prompts.append(" ".join(current_lines).strip())
+            if current_lines[0].startswith("Image ") or current_lines[0].startswith("Video "):
+                prompts.append(" ".join(current_lines).strip())
             current_lines = [stripped]
         elif is_new:
             current_lines = [stripped]
         else:
             current_lines.append(stripped)
-    if current_lines:
+    if current_lines and (current_lines[0].startswith("Image ") or current_lines[0].startswith("Video ")):
         prompts.append(" ".join(current_lines).strip())
     return prompts
 
@@ -70,6 +71,7 @@ def process_media(week_folder: Path, script_key: str, state: dict) -> None:
         state,
         script_key,
         lambda s: save_state(week_folder, s),
+        images_folder=script_folder / "images",
     )
 
     state[script_key] = "complete"
