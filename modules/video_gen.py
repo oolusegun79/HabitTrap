@@ -2,7 +2,7 @@ import re
 import time
 from pathlib import Path
 from google import genai
-from google.genai import types
+from google.genai import types, errors
 
 MODEL = "veo-3.1-lite-generate-preview"
 
@@ -32,19 +32,29 @@ def generate_video(
                     mime_type="image/png",
                 )
 
-    if image is not None:
-        operation = client.models.generate_videos(
-            model=MODEL,
-            image=image,
-            prompt=prompt,
-            config=types.GenerateVideosConfig(aspect_ratio="16:9"),
-        )
-    else:
-        operation = client.models.generate_videos(
-            model=MODEL,
-            prompt=prompt,
-            config=types.GenerateVideosConfig(aspect_ratio="16:9"),
-        )
+    for attempt in range(5):
+        try:
+            if image is not None:
+                operation = client.models.generate_videos(
+                    model=MODEL,
+                    image=image,
+                    prompt=prompt,
+                    config=types.GenerateVideosConfig(aspect_ratio="16:9"),
+                )
+            else:
+                operation = client.models.generate_videos(
+                    model=MODEL,
+                    prompt=prompt,
+                    config=types.GenerateVideosConfig(aspect_ratio="16:9"),
+                )
+            break
+        except errors.ClientError as e:
+            if e.code == 429 and attempt < 4:
+                wait = 60 * (attempt + 1)
+                print(f"  Rate limited, waiting {wait}s before retry {attempt + 2}/5...")
+                time.sleep(wait)
+            else:
+                raise
 
     while not operation.done:
         time.sleep(10)
@@ -78,3 +88,4 @@ def generate_videos(
         completed.append(filename)
         state[f"{script_key}_videos_done"] = completed
         save_state_fn(state)
+        time.sleep(35)

@@ -14,7 +14,7 @@ def save_state(week_folder: Path, state: dict) -> None:
     state_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-RESUMABLE = {"scripts_done", "image_gen_in_progress", "video_gen_in_progress"}
+RESUMABLE = {"scripts_done", "image_gen_in_progress"}
 
 
 def get_next_pending_script(state: dict) -> str | None:

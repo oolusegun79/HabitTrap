@@ -7,7 +7,6 @@ from modules.research import research_topics, write_script, humanize_script
 from modules.prompts import write_prompt_files
 from modules.voiceover import generate_voiceover
 from modules.image_gen import generate_images
-from modules.video_gen import generate_videos
 
 load_dotenv()
 BASE_DIR = Path(__file__).parent
@@ -47,7 +46,6 @@ def process_media(week_folder: Path, script_key: str, state: dict) -> None:
     script_folder = week_folder / script_key
 
     image_prompts = parse_prompts(script_folder / f"Script{script_num}ImagePrompt.md")[:40]
-    video_prompts = parse_prompts(script_folder / "ScriptVideoPrompt.md")[:15]
 
     print(f"  Generating {len(image_prompts)} images for {script_key}...")
     state[script_key] = "image_gen_in_progress"
@@ -59,19 +57,6 @@ def process_media(week_folder: Path, script_key: str, state: dict) -> None:
         state,
         script_key,
         lambda s: save_state(week_folder, s),
-    )
-
-    print(f"  Generating {len(video_prompts)} videos for {script_key}...")
-    state[script_key] = "video_gen_in_progress"
-    save_state(week_folder, state)
-    generate_videos(
-        video_prompts,
-        get_env("GEMINI_API_KEY"),
-        script_folder / "videos",
-        state,
-        script_key,
-        lambda s: save_state(week_folder, s),
-        images_folder=script_folder / "images",
     )
 
     state[script_key] = "complete"
