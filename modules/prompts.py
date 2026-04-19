@@ -38,6 +38,15 @@ def generate_thumbnail(topic: str, script: str, api_key: str) -> str:
     )
 
 
+def generate_upload_package(topic: str, script: str, api_key: str) -> str:
+    system_prompt = load_skill("upload-package")
+    return call_claude(
+        system_prompt,
+        f"Topic: {topic}\n\nScript:\n{script}",
+        api_key,
+    )
+
+
 def write_prompt_files(
     script_folder: Path,
     topic: str,
@@ -48,7 +57,9 @@ def write_prompt_files(
     image_prompts = generate_image_prompts(script, api_key)
     video_prompts = generate_video_prompts(script, image_prompts, api_key)
     thumbnail = generate_thumbnail(topic, script, api_key)
+    upload_package = generate_upload_package(topic, script, api_key)
 
     (script_folder / f"Script{script_num}ImagePrompt.md").write_text(image_prompts, encoding="utf-8")
     (script_folder / "ScriptVideoPrompt.md").write_text(video_prompts, encoding="utf-8")
     (script_folder / "Thumbnail.md").write_text(thumbnail, encoding="utf-8")
+    (script_folder / f"Script{script_num}UploadPackage.md").write_text(upload_package, encoding="utf-8")
