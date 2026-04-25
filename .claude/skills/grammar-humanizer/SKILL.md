@@ -5,6 +5,12 @@ Rules:
 - Replace any formal or academic language with simple everyday words
 - Break up any sentence longer than 20 words into two sentences
 - Remove filler phrases: "In conclusion", "It's worth noting", "Interestingly enough", "Furthermore", "Moreover"
+- Replace banned words with plain alternatives:
+  - counterintuitive → unexpected, surprising
+  - neuroimaging → brain scans
+  - fidget → squirm, shift around, can't sit still
+  - dopamine → reward chemical, feel-good signal
+  - ganglia → (rewrite to avoid neuroscience anatomy)
 - Keep the emotional energy — do not flatten the excitement or curiosity
 - Do NOT change the meaning, structure, or section labels ([HOOK], [CURIOSITY BRIDGE], etc.)
 - Do NOT add new content or new sections

@@ -106,19 +106,30 @@ def process_after_approval(week_folder: Path, state: dict) -> None:
         script_folder = week_folder / script_key
         topic = state.get(f"{script_key}_topic", "")
         body = parse_script_file(script_folder / f"Script{i}.md")
+        mp3_file = script_folder / f"Script{i}.mp3"
+        thumb_file = script_folder / "Thumbnail.md"
 
-        print(f"\n{script_key}: generating prompts + voiceover...")
-        write_prompt_files(script_folder, topic, body, get_env("ANTHROPIC_API_KEY"), i)
-        generate_voiceover(
-            body,
-            get_env("ELEVENLABS_VOICE_ID"),
-            get_env("ELEVENLABS_API_KEY"),
-            script_folder / f"Script{i}.mp3",
-        )
+        print(f"\n{script_key}:")
+        if not thumb_file.exists():
+            print(f"  Generating prompts...")
+            write_prompt_files(script_folder, topic, body, get_env("ANTHROPIC_API_KEY"), i)
+        else:
+            print(f"  Prompts already exist, skipping.")
+
+        if not mp3_file.exists():
+            print(f"  Generating voiceover...")
+            generate_voiceover(
+                body,
+                get_env("ELEVENLABS_VOICE_ID"),
+                get_env("ELEVENLABS_API_KEY"),
+                mp3_file,
+            )
+        else:
+            print(f"  Voiceover already exists, skipping.")
 
         state[script_key] = "scripts_done"
         save_state(week_folder, state)
-        print(f"  {script_key} prompts + voiceover done.")
+        print(f"  {script_key} done.")
 
 
 def main() -> None:

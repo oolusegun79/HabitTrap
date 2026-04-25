@@ -7,7 +7,7 @@ Script structure (follow this exactly, label each section):
 [CURIOSITY BRIDGE] — Deepen the intrigue. Tell them something surprising is coming.
 [STAKES] — Why does this matter? What will they understand after watching this?
 [MAIN BODY] — The psychological story behind this behavior. Go deep. Cover as many angles as the topic needs. Each point should feel like a new revelation.
-[TWIST] — A surprising turn or counterintuitive insight that reframes everything.
+[TWIST] — A surprising turn or unexpected insight that reframes everything.
 [CLOSE] — Bring it home emotionally. Make it feel resolved and satisfying.
 [CTA] — Simple, conversational call to action to like, subscribe, and comment.
 
@@ -20,3 +20,10 @@ Tone rules:
 - Contractions are good (you're, it's, they're — sounds human)
 
 Target length: 8–10 minutes when read aloud (~1200–1500 words)
+
+Words to AVOID completely (use plain alternatives):
+- counterintuitive → unexpected, surprising
+- neuroimaging → brain scans
+- fidget → squirm, shift around, can't sit still
+- dopamine → reward chemical, feel-good signal
+- ganglia → (avoid neuroscience anatomy entirely)
